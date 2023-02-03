@@ -6,6 +6,8 @@ model = Magma(
     device = 'cuda:0'
 )
 
+
+
 inputs =[
     ## supports urls and path/to/image
     ImageInput('https://www.art-prints-on-demand.com/kunst/thomas_cole/woods_hi.jpg'),

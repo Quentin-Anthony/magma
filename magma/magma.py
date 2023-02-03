@@ -21,6 +21,7 @@ from .sampling import generate
 from .utils import build_labels, is_url, print_main, download_checkpoint
 from .image_input import ImageInput
 from .transforms import get_transforms
+import loralib.layers
 
 # ------------------------- Magma main class ----------------------------------
 
@@ -105,7 +106,6 @@ class Magma(nn.Module):
         if config.freeze_img_encoder:
             for param in self.image_prefix.enc.parameters():
                 param.requires_grad = False
-
         self.lm.to(self.device)
 
     def add_adapters(
@@ -132,7 +132,6 @@ class Magma(nn.Module):
         if self.config.lm_name == "neox":
             ff_attr = "mlp"
             attn_attr = "attention"
-
         for l in range(len(self.transformer)):
             if location == "mlp":
                 if self.mlp_adapter_added:
@@ -147,17 +146,17 @@ class Magma(nn.Module):
                         **adapter_kwargs,
                     )
                 else:
+                    for key,value in mlp._modules.items():
+                        if key in {"dense_4h_to_h","dense_h_to_4h"}:
+                            mlp._modules[key] = loralib.layers.Linear(value.in_features,value.out_features)
+                            print(isinstance(mlp._modules[key],loralib.layers.Linear))
                     adpt = Adapter(
                         dim=self.lm.config.hidden_size,
                         downsample_factor=downsample_factor,
                         **adapter_kwargs,
                     )
-                    adapter_layer = nn.Sequential(
-                        *[
-                            mlp,
-                            adpt,
-                        ]
-                    )
+                    adapter_layer = mlp
+
                 setattr(self.transformer[l], ff_attr, adapter_layer)
             else:
                 if self.attn_adapter_added:
