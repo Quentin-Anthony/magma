@@ -146,16 +146,12 @@ class Magma(nn.Module):
                         **adapter_kwargs,
                     )
                 else:
-                    for key,value in mlp._modules.items():
-                        if key in {"dense_4h_to_h","dense_h_to_4h"}:
-                            mlp._modules[key] = loralib.layers.Linear(value.in_features,value.out_features)
-                            print(isinstance(mlp._modules[key],loralib.layers.Linear))
                     adpt = Adapter(
                         dim=self.lm.config.hidden_size,
                         downsample_factor=downsample_factor,
                         **adapter_kwargs,
                     )
-                    adapter_layer = mlp
+                    adapter_layer = nn.Sequential(adpt,mlp)
 
                 setattr(self.transformer[l], ff_attr, adapter_layer)
             else:
@@ -171,13 +167,14 @@ class Magma(nn.Module):
                         **adapter_kwargs,
                     )
                 else:
+                    attn._modules["query_key_value"] = loralib.layers.MergedLinear(attn._modules["query_key_value"].in_features,attn._modules["query_key_value"].out_features,r=8,enable_lora=[True,False,True])
                     adapter_layer = AdapterWrapper(
                         attn_block=attn,
                         dim=self.lm.config.hidden_size,
                         downsample_factor=downsample_factor,
                         **adapter_kwargs,
                     )
-                setattr(self.transformer[l], attn_attr, adapter_layer)
+                setattr(self.transformer[l], attn_attr, attn)
 
         if location == "mlp":
             self.mlp_adapter_added = True
