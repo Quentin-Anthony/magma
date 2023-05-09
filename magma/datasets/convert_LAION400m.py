@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from tqdm import tqdm
-from magma.datasets.convert_datasets import convert_dataset
+from convert_datasets import convert_dataset
 
 def get_ds_iterator(tmp_path):
     for image in tmp_path.glob("*.jpg"):

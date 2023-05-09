@@ -1,9 +1,9 @@
 #!/bin/bash
-#BSUB -nnodes 9
-#BSUB -W 2:00
+#BSUB -nnodes 5
+#BSUB -W 1:30
 #BSUB -q batch
-#BSUB -o magma_pythia70m_out.%J
-#BSUB -e magma_pythia70m_err.%J
+#BSUB -o /ccs/home/alexisroger/scratch/jobs/magma_pythia70m_out.%J
+#BSUB -e /ccs/home/alexisroger/scratch/jobs/magma_pythia70m_err.%J
 #BSUB -J magma_pythia70m
 #BSUB -alloc_flags gpudefault
 #BSUB -P CSC499
