@@ -99,6 +99,7 @@ class Magma(nn.Module):
         # freeze parameters
         if config.freeze_lm:
             for name, param in self.lm.named_parameters():  # freeze lm weights
+                param.requires_grad = False
                 if config.adapter_config and "adapter" in name:
                     param.requires_grad = True
 
