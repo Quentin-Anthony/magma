@@ -366,8 +366,8 @@ def build_labels(
     """
     shape = input_embeddings.shape[:2]  # b, s
 
-    print(f'captions: {captions.shape[1]}')
-    print(f'default: {shape[1]}')
+    #print(f'captions: {captions.shape[1]}')
+    #print(f'default: {shape[1]}')
     assert captions.shape[1] >= shape[1]
 
     # make sure to add masked embedding tokens in the appropriate locations in the labels

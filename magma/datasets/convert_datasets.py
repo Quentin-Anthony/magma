@@ -20,7 +20,7 @@ def save_to_jsons(data_list, target_dir, starting_idx=0):
 
 
 def save_images(img_list, target_dir, mode="mv"):
-    print(f'img_list: {img_list}')
+    #print(f'img_list: {img_list}')
     for img_path in tqdm(
         img_list,
         desc=f"saving {len(img_list)} images (mode={mode}) to {str(target_dir)}",
@@ -37,6 +37,7 @@ def convert_dataset(
     hash_fn=None,
     mode="cp",
     ds_iterator=None,
+    dataset_number=0
 ):
     """
     Builds a dataset directory in our standard format. ds_iterator should return data of the form
@@ -52,8 +53,8 @@ def convert_dataset(
 
     img_data_list = []
     img_path_list = []
-    save_img_dir = data_dir / "images" / "0"
-    save_data_dir = data_dir / "image_data" / "0"
+    save_img_dir = data_dir / "images" / str(dataset_number)
+    save_data_dir = data_dir / "image_data" / str(dataset_number)
     num_img_dirs = 0
 
     # save the new locations of all img files in case some datafiles point to the same image
@@ -81,7 +82,7 @@ def convert_dataset(
         else:
             # if file exists in the old location, it will get moved to a new directory
             #new_img_path = f"images/{save_img_dir}/{img_path}"
-            new_img_path = f"{img_path}"
+            new_img_path = f"{save_img_dir}/{str(img_path).split('/')[-1]}"
             img_cpt_data["image_path"] = new_img_path
             new_img_locations[str(img_path)] = {"new_img_path": new_img_path}
             # original location is saved an later saved to the new directory

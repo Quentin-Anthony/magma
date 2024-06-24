@@ -16,6 +16,7 @@ from magma.magma import (
 from magma.utils import (
     is_main,
     cycle,
+    get_world_info,
     parse_args,
     wandb_log,
     wandb_init,
@@ -30,6 +31,8 @@ from magma.train_loop import (
     train_step,
 )
 
+import deepspeed.comm as dist
+from deepspeed.runtime.utils import see_memory_usage
 
 def _load_img_cpt_datasets(dataset_dir, tokenizer, transforms):
     if isinstance(dataset_dir, (list, tuple)):
@@ -74,6 +77,8 @@ if __name__ == "__main__":
     # parse command line arguments:
     args = parse_args()
     deepspeed.init_distributed()
+
+    args.local_rank, _, _ = get_world_info()
 
     # load model + tokenizer:
     model = Magma(
@@ -150,7 +155,7 @@ if __name__ == "__main__":
         global_step += 1
 
         if global_step % config.log_every == 0:
-            pbar.set_description(f"training... Step: {global_step} Loss: {loss}")
+            pbar.set_description(f"training... Rank: {dist.get_rank()}, Step: {global_step}, Loss: {loss}")
             current_lr = (
                 [lr for lr in lr_scheduler.get_lr()]
                 if lr_scheduler is not None
@@ -173,11 +178,11 @@ if __name__ == "__main__":
                 )
 
                 ##### inference:
-                image_grid, caption = inference_step(config, eval_loader, model_engine)
-                wandb_log(
-                    {"inference/image": wandb.Image(image_grid, caption=caption)},
-                    step=global_step,
-                )
+                # image_grid, caption = inference_step(config, eval_loader, model_engine)
+                # wandb_log(
+                #     {"inference/image": wandb.Image(image_grid, caption=caption)},
+                #     step=global_step,
+                # )
 
             model_engine.train()
 
